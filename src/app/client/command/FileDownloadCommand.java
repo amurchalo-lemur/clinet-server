@@ -27,6 +27,7 @@ public class FileDownloadCommand extends Command {
         }
 
         transport.send(new FileDownloadRequest(tokenHolder.getToken(), filename));
+
         var response = expectMessage(FileDownloadResponse.class);
 
         var temp = Files.createTempFile("file-storage_", "");
@@ -34,6 +35,6 @@ public class FileDownloadCommand extends Command {
             transport.getInputStream().transferTo(tempOutputStream);
         }
 
-        new ProcessBuilder("/usr/bin/open", temp.toAbsolutePath().toString()).start();
+        //new ProcessBuilder("/usr/bin/open", temp.toAbsolutePath().toString()).start();
     }
 }

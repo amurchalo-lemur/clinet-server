@@ -23,5 +23,11 @@ public class SessionService {
     }
 
     public record TokenSession(Token token, Session session) {
+
     }
+
+    public Map<Token, Session> getMap() {
+        return this.map;
+    }
+
 }

@@ -4,6 +4,7 @@ import app.IO;
 import app.Settings;
 import app.server.filestorage.FileStorageService;
 import app.server.net.*;
+import app.server.session.Session;
 import app.server.session.SessionService;
 import app.server.session.Token;
 import app.server.user.UserService;
@@ -16,6 +17,7 @@ import app.transport.message.storage.*;
 
 import java.io.IOException;
 import java.net.ServerSocket;
+import java.time.LocalTime;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -31,7 +33,9 @@ public class Server {
     }
 
     private void listenLoop() throws IOException {
+        //new WatchDog(sessionService);
         try (var ss = new ServerSocket(Settings.PORT)) {
+
             io.println("server listening on port " + Settings.PORT);
             while (true) {
                 try {
@@ -51,12 +55,25 @@ public class Server {
         try {
             var request = transport.receive();
             checkAuth(request);
+            upDateLastActivity(request);
             routeToHandler(transport, request);
         } catch (Exception e) {
             io.println("handle error: " + e.getMessage());
+            e.printStackTrace();
             transport.send(new ErrorResponse(e.getMessage()));
         } finally {
             transport.disconnect();
+        }
+    }
+
+    private void upDateLastActivity(Message request){
+        if (request instanceof AuthorizedMessage auth) {
+            if (auth.getAuthToken() == null) {
+                throw new ServerException("no authorization token found in request");
+            }
+            var token = Token.fromText(auth.getAuthToken());
+            var session = sessionService.get(token);
+            session.put(Session.LAST_ACTIVITY_TIME, LocalTime.now());
         }
     }
 
@@ -66,10 +83,6 @@ public class Server {
                 throw new ServerException("no authorization token found in request");
             }
             var token = Token.fromText(auth.getAuthToken());
-            var session = sessionService.get(token);
-            if (session == null) {
-                throw new ServerException("authorization failed");
-            }
         }
     }
 
@@ -80,7 +93,10 @@ public class Server {
             case CheckAuthRequest req -> new CheckAuthHandler(transport, io, sessionService);
             case FileListRequest req -> new FileListHandler(transport, io, fileSystemService, sessionService);
             case FileUploadRequest req -> new FileUploadHandler(transport, io, fileSystemService, sessionService);
+            case FileRemoveRequest req -> new FileRemoveHandler(transport, io, fileSystemService, sessionService);
+            case MakeDirectoryRequest req -> new MakeDirectoryHandler(transport, io, fileSystemService, sessionService);
             case FileDownloadRequest req -> new FileDownloadHandler(transport, io, fileSystemService, sessionService);
+            case DirectoryDownloadRequest req -> new DirectoryDownloadHandler(transport, io, fileSystemService, sessionService);
             default -> new UnimplementedHandler(transport, io);
         }).handle(request);
     }

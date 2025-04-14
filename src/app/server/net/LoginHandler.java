@@ -10,6 +10,8 @@ import app.transport.message.Message;
 import app.transport.message.storage.LoginRequest;
 import app.transport.message.storage.LoginResponse;
 
+import java.time.LocalDateTime;
+
 public class LoginHandler extends Handler {
     private final UserService userService;
     private final SessionService sessionService;
@@ -32,6 +34,8 @@ public class LoginHandler extends Handler {
         var token = pair.token();
         var session = pair.session();
         session.put(Session.USERNAME, req.getUsername());
+        LocalDateTime lastTime = LocalDateTime.now();
+        session.put(Session.LAST_ACTIVITY_TIME, lastTime);
 
         transport.send(new LoginResponse(token.getText()));
         io.println("user " + req.getUsername() + " logged in with token " + token);

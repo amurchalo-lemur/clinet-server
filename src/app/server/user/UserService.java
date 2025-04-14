@@ -7,6 +7,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class UserService {
     private final Map<String, String> userPasswords = new ConcurrentHashMap<>() {{
         put("user", "secret");
+        put("1", "1");
     }};
 
     public boolean userExists(String username) {

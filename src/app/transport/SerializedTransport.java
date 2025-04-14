@@ -38,6 +38,7 @@ public class SerializedTransport implements Transport {
         try {
             if (socket == null || socket.isClosed()) {
                 socket = new Socket(Settings.HOST, Settings.PORT);
+                //socket.setSoTimeout(5000);
                 writer = new ObjectOutputStream(socket.getOutputStream());
                 reader = new ObjectInputStream(socket.getInputStream());
                 logger.debug("transport connected to " + socket);

@@ -41,6 +41,15 @@ public class FileStorageService {
             throw new FileStorageException(e);
         }
     }
+
+    public void delete(String username, String filename) {
+        try {
+            Files.delete(getUserFilePath(username, filename));
+        } catch (IOException e) {
+            throw new FileStorageException(e);
+        }
+    }
+
     public InputStream getFileInputStream(String username, String filename) {
         var path = getUserFilePath(username, filename);
         if (Files.exists(path) && !Files.isRegularFile(path)) {
@@ -68,6 +77,7 @@ public class FileStorageService {
         return Path.of(Settings.SERVER_FILE_STORAGE_BASE_PATH, username);
     }
     private Path getUserFilePath(String username, String filename) {
-        return Path.of(getUserDirectory(username).toString(), filename);
+//        System.out.println("вот это ->"+Path.of(getUserDirectory(username).toString(), filename));
+        return Path.of(getUserDirectory(username).toString(),"/", filename);
     }
 }

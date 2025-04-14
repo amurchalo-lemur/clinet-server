@@ -31,10 +31,14 @@ public class FileUploadCommand extends Command {
         if (!Files.isRegularFile(path)) {
             throw new CommandException("file doesn't exist or is not a regular file");
         }
+        io.print("enter path in directory (default /') ");
+        var directoryPath = io.readln();
 
         // TODO ограничение на размер файла
-        var filename = path.getFileName().toString();
+        //var filename = path.getParent().getFileName().toString();
+        var filename = directoryPath + path.getFileName().toString();
         var fileSize = Files.size(path);
+
         transport.send(new FileUploadRequest(tokenHolder.getToken(), filename, fileSize));
         var response = expectMessage(FileUploadResponse.class);
 
